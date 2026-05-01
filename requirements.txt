@@ -1,0 +1,9 @@
+mne
+pyedflib
+pandas
+numpy
+scipy
+scikit-learn
+xgboost
+joblib
+streamlit
