@@ -1,2 +1,7 @@
 # data files
 Dataset/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/

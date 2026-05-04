@@ -84,6 +84,17 @@ def list_model_files(models_dir: Path):
     return files
 
 
+def show_pdf_bytes(pdf_bytes: bytes, height: int = 600):
+    """Render PDF bytes inside Streamlit using an iframe (base64 embedded)."""
+    if not pdf_bytes:
+        st.info("Không có PDF để hiển thị.")
+        return
+    base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="{height}" type="application/pdf"></iframe>'
+    components.html(pdf_display, height=height)
+
+
+
 def find_scaler_for_model(model_path: Path):
     models_dir = Path(model_path).parent
     # common naming: <modelname>_scaler.pkl or *_scaler.pkl
@@ -242,6 +253,8 @@ def main():
     st.title("Sleep Stage Test Evaluator")
     st.caption("Upload EDF/TSV, chay preprocess, du doan bang model .pkl va doi chieu voi nhan bac si.")
 
+    
+
     default_models_dir = Path("models")
 
     with st.sidebar:
@@ -252,6 +265,7 @@ def main():
         # Show warning if keras not available
         if not KERAS_AVAILABLE:
             st.warning("⚠️ Keras/TensorFlow not installed - ANN model unavailable. Use Logistic, Random Forest, or XGBoost instead.")
+        
     if not models_dir.exists():
         st.error(f"Khong tim thay thu muc model: {models_dir}")
         return
