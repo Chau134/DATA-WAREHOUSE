@@ -221,6 +221,7 @@ def process_all_datasets(input_folder):
             )
         except:
             pass  # bỏ qua nếu trùng
+    print("dim_gender data inserted.")
 
     # Insert dim_race
     for r in races:
@@ -231,6 +232,7 @@ def process_all_datasets(input_folder):
             )
         except:
             pass
+    print("dim_race data inserted.")
 
     # Insert dim_hispanic
     for h in hispanics:
@@ -243,6 +245,7 @@ def process_all_datasets(input_folder):
             pass
 
     conn.commit()
+    print("dim_hispanic data inserted.")
 
     # Insert dim_patient
     with open("Dataset/DEMOGRAPHIC.csv", newline='', encoding='utf-8') as csvfile:
@@ -284,6 +287,48 @@ def process_all_datasets(input_folder):
                 print("Error row:", row, e)
 
     conn.commit()
+    print("dim_patient data inserted.")
+
+    with open("Dataset/SLEEP_STUDY.csv", newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        for row in reader:
+            # try:
+                study_pat_id = int(row["STUDY_PAT_ID"])
+                sleep_study_id = int(row["SLEEP_STUDY_ID"])
+
+                start_dt = datetime.strptime(
+                    row["SLEEP_STUDY_START_DATETIME"].strip(),
+                    "%Y-%m-%d %H:%M:%S"
+                )
+
+                # duration dạng " 9:35:32"
+                duration_str = row["SLEEP_STUDY_DURATION_DATETIME"].strip()
+                h, m, s = map(int, duration_str.split(":"))
+
+                # convert duration → DATE (Oracle cần date)
+                duration_date = datetime(1900, 1, 1, h, m, s)
+
+                age_days = int(row["AGE_AT_SLEEP_STUDY_DAYS"])
+
+                cursor.execute("""
+                    INSERT INTO dim_sleep_study (
+                        sleep_study_id,
+                        study_pat_id,
+                        sleep_study_start,
+                        sleep_study_duration,
+                        age_at_sleep_study_days
+                    ) VALUES (:1,:2,:3,:4,:5)
+                """, (
+                    sleep_study_id,
+                    study_pat_id,
+                    start_dt,
+                    duration_date,
+                    age_days
+                ))
+
+    conn.commit()
+    print("dim_sleep_study data inserted.")
 
     print('Starting batch processing...')
 
@@ -299,7 +344,7 @@ def process_all_datasets(input_folder):
             print(f'Processing file: {base_name}')
 
             try:
-                # 👉 lấy patient_id từ tên file (tùy dataset bạn)
+                # lấy patient_id từ tên file
                 study_pat_id = int(base_name.split("_")[0])
                 sleep_study_id = int(base_name.split("_")[1])
 
@@ -325,7 +370,7 @@ def process_all_datasets(input_folder):
                     time_id = sleep_study_id * 100000 + idx
 
                     data.append((
-                        study_pat_id,
+                        sleep_study_id,
                         time_id,
                         row['Mean'],
                         row['Variance'],
@@ -357,10 +402,10 @@ def process_all_datasets(input_folder):
                     VALUES (:1, :2, :3)
                 """, time_data)
 
-                # ---- insert fact ----
+                # ---- insert fact table ----
                 cursor.executemany("""
                     INSERT INTO fact_eeg_features (
-                        study_pat_id, time_id,
+                        sleep_study_id, time_id,
                         mean, variance, skewness, kurtosis,
                         power_delta, power_theta, power_alpha, power_beta,
                         theta_alpha_ratio, spectral_entropy, rolling_var,
@@ -388,7 +433,7 @@ def process_all_datasets(input_folder):
     cursor.close()
     conn.close()
 
-    print('Processing complete! Data inserted into Oracle.')
+    print('Processing complete! Data inserted into Data warehouse.')
 
 
 def main():
