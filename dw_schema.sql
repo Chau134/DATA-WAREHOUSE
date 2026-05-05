@@ -1,5 +1,5 @@
 CREATE TABLE dim_gender (
-	gender_cd CHAR(1) PRIMARY KEY,
+	gender_cd CHAR(2) PRIMARY KEY,
 	gender_descr VARCHAR(255)
 );
 
@@ -9,20 +9,29 @@ CREATE TABLE dim_race (
 );
 
 CREATE TABLE dim_hispanic (
-	hispanic_cd CHAR(1) PRIMARY KEY,
+	hispanic_cd CHAR(2) PRIMARY KEY,
 	ethnicity_descr VARCHAR(255)
 );
 
 CREATE TABLE dim_patient (
 	study_pat_id NUMBER(10) PRIMARY KEY,
 	birth_date DATE,
-	gender_cd CHAR(1),
+	gender_cd CHAR(2),
 	race_cd CHAR(2),
-	hispanic_cd CHAR(1),
+	hispanic_cd CHAR(2),
 	language_descr VARCHAR(255),
 	FOREIGN KEY (gender_cd) REFERENCES dim_gender(gender_cd),
 	FOREIGN KEY (race_cd) REFERENCES dim_race(race_cd),
 	FOREIGN KEY (hispanic_cd) REFERENCES dim_hispanic(hispanic_cd)
+);
+
+CREATE TABLE dim_sleep_study (
+	sleep_study_id NUMBER(10) PRIMARY KEY,
+	study_pat_id NUMBER(10),
+	sleep_study_start DATE,
+	sleep_study_duration DATE,
+	age_at_sleep_study_days NUMBER(10),
+	FOREIGN KEY (study_pat_id) REFERENCES dim_patient (study_pat_id)
 );
 
 CREATE TABLE dim_time (
@@ -33,7 +42,7 @@ CREATE TABLE dim_time (
 
 CREATE TABLE fact_eeg_features (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    study_pat_id NUMBER,
+    sleep_study_id NUMBER,
     time_id NUMBER,
 
     mean NUMBER,
@@ -62,6 +71,6 @@ CREATE TABLE fact_eeg_features (
 
     label NUMBER,
 
-    FOREIGN KEY (study_pat_id) REFERENCES dim_patient(study_pat_id),
+    FOREIGN KEY (sleep_study_id) REFERENCES dim_sleep_study(sleep_study_id),
     FOREIGN KEY (time_id) REFERENCES dim_time(time_id)
 );
