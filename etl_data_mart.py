@@ -38,8 +38,8 @@ FROM fact_eeg_features
 df = pd.read_sql(query, conn)
 
 # Xuất CSV
-df.to_csv("eeg_features.csv", index=False)
+df.to_csv("all_subjects_features.csv", index=False)
 
-print("Export thành công file eeg_features.csv")
+print("Export thành công file all_subjects_features.csv")
 
 conn.close()
