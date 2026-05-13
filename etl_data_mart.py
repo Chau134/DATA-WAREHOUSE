@@ -22,14 +22,6 @@ SELECT
     theta_alpha_ratio AS "Theta_Alpha_Ratio",
     spectral_entropy AS "Spectral_Entropy",
     rolling_var AS "Rolling_Var",
-    delta_diff AS "Delta_diff",
-    theta_diff AS "Theta_diff",
-    alpha_diff AS "Alpha_diff",
-    beta_diff AS "Beta_diff",
-    delta_theta_ratio AS "Delta_Theta_ratio",
-    alpha_beta_ratio AS "Alpha_Beta_ratio",
-    rolling_mean_delta AS "Rolling_Mean_Delta",
-    rolling_mean_theta AS "Rolling_Mean_Theta",
     label AS "Label"
 FROM fact_eeg_features
 """
